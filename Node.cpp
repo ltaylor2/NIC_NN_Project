@@ -29,5 +29,5 @@ double Node::evaluateNode(double input) {
 
 // TODO static?
 double Node::sigmoidActivation(double x) {
-	return 1/(1+ exp(-x*0.5));
+	return 1/(1+ exp(-x+0.5));
 }

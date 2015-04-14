@@ -12,6 +12,7 @@ public:
 	double getOutput() const { return output; }
 
 private:
+	// TODO static?
 	double sigmoidActivation(double x);
 
 	double output;

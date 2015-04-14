@@ -5,7 +5,7 @@
 #include <ctime>
 #include <cmath>
 
-Perceptron::Perceptron(int epochs, const std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled)
+Perceptron::Perceptron(int epochs, double learningRate, const std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled)
     : inputLayer(labeled[0].first.size(), Node()),
       outputLayer(labeled[0].second.size(), Node())
 {
@@ -21,7 +21,7 @@ Perceptron::Perceptron(int epochs, const std::vector<std::pair<std::vector<doubl
         }
     }
 
-    train(epochs, labeled);
+    train(epochs, learningRate, labeled);
 }
 
 // NOTE assumes output is correct size
@@ -41,7 +41,7 @@ void Perceptron::evaluate(const std::vector<double>& input, std::vector<double>&
     }
 }
 
-void Perceptron::train(int epochs, const std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled)
+void Perceptron::train(int epochs, double learningRate, const std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled)
 {
     for (int i = 0; i < epochs; i++) {
         std::cout << "epoch, " << i << std::endl;
@@ -58,10 +58,15 @@ void Perceptron::train(int epochs, const std::vector<std::pair<std::vector<doubl
                 for (unsigned int m = 0; m < inputLayer.size(); m++) {
                     for (unsigned int n = 0; n < outputLayer.size(); n++) {
                         // TODO check weight update
-                        weights[m][n] += Perceptron::learningRate * error * labeled[j].first[m];
+                        // 
+                        weights[m][n] += learningRate * error * sigmoidPrime(labeled[j].first[m]);
                     }
                 }
             }
         }
     }
+}
+
+double Perceptron::sigmoidPrime(double x) {
+    return exp(x) / pow(exp(x) + 1, 2);
 }
