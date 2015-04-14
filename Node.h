@@ -3,16 +3,16 @@
 #include <vector>
 
 class Node {
-	
 public:
 	Node();
 	
-	double evaluateNode(std::vector<double> &input);
+	double evaluateNode(const std::vector<double> &input);
 	double evaluateNode(double input);
 
-	double getOutput() { return output; }
+	double getOutput() const { return output; }
 
 private:
-	double sigmoidActivation(double inputSum);
+	double sigmoidActivation(double x);
+
 	double output;
 };

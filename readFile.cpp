@@ -6,7 +6,8 @@
 #include <cstdlib>
 
 //Read 32x32 training/testing examples from file
-std::vector<std::pair<std::vector<double>, std::vector<double>>>* readData32(std::string fp) {
+void readData32(std::string fp, std::vector<std::pair<std::vector<double>, std::vector<double>>>& examples32)
+{
 	std::fstream file(fp);
 	std::stringstream ss;
 	if (file.is_open()) {
@@ -14,7 +15,7 @@ std::vector<std::pair<std::vector<double>, std::vector<double>>>* readData32(std
 		std::vector<double> exampleData;
 		while (getline(file, line)) {
 			if (line[0] == '0' || line[0] == '1') {
-				for (int i = 0; i < line.length(); i++) {
+				for (unsigned int i = 0; i < line.length(); i++) {
 					double bit;
 					ss.clear();
 					ss.str("");
@@ -39,13 +40,12 @@ std::vector<std::pair<std::vector<double>, std::vector<double>>>* readData32(std
 	}
 	else {
 		std::cout << "File did not open properly." << std::endl;
-		return NULL;
 	}
-	return &examples32;
 }
 
 //Read 8x8 training/testing examples from file
-std::vector<std::pair<std::vector<double>, std::vector<double>>>* readData8(std::string fp) {
+void readData8(std::string fp, std::vector<std::pair<std::vector<double>, std::vector<double>>>& examples8)
+{
 	std::fstream file(fp);
 	std::stringstream ss;
 	if (file.is_open()) {
@@ -73,9 +73,7 @@ std::vector<std::pair<std::vector<double>, std::vector<double>>>* readData8(std:
 	}
 	else {
 		std::cout << "File did not open properly." << std::endl;
-		return NULL;
 	}
-	return &examples8;
 }
 
 //Prints data that has been read from file
