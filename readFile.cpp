@@ -8,6 +8,7 @@
 //Read 32x32 training/testing examples from file
 void readData32(std::string fp, std::vector<std::pair<std::vector<double>, std::vector<double>>>& examples32)
 {
+	std::cout << "Attempting to read file." << std::endl;
 	std::fstream file(fp);
 	std::stringstream ss;
 	if (file.is_open()) {
@@ -41,6 +42,8 @@ void readData32(std::string fp, std::vector<std::pair<std::vector<double>, std::
 	else {
 		std::cout << "File did not open properly." << std::endl;
 	}
+
+	std::cout << "File read in!" << std::endl;
 }
 
 //Read 8x8 training/testing examples from file

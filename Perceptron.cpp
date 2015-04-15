@@ -5,62 +5,89 @@
 #include <ctime>
 #include <cmath>
 
-// TODO add bias node
-Perceptron::Perceptron(int epochs, double learningRate, const std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled)
-    : outputLayer(labeled[0].second.size(), Node())
+Perceptron::Perceptron(int epochs, double learningRate, std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled, bool multipleOutputs)
 {
+    // Seed random number generator
     srand(time(NULL));
     
-    int inputNum = labeled[0].first.size();
+    // Add bias node
+    for (unsigned int i = 0; i < labeled.size(); i++) {
+        labeled[i].first.push_back(1.0);
+    }
+    
+    std::cout << "Biased" << std::endl;
 
-    weights = new double*[inputNum];
-    for (int i = 0; i < inputNum; i++) {
-        weights[i] = new double[outputLayer.size()];
+    int inputSize = labeled[0].first.size();
+    int outputSize = 10;
+
+    // Create weight matrix
+    weights = new double*[inputSize];
+    for (int i = 0; i < inputSize; i++) {
+        weights[i] = new double[outputSize];
     }
 
-    for (int i = 0; i < inputNum; i++) {
-        for (unsigned int j = 0; j < outputLayer.size(); j++) {
+    std::cout << "Weights" << std::endl;
+
+    // Initialize weights randomly between interval
+    for (int i = 0; i < inputSize; i++) {
+        for (int j = 0; j < outputSize; j++) {
             // NOTE between -0.25 and 0.25
-            weights[i][j] = (2*(static_cast<double>(rand()) / RAND_MAX) - 1);
+            weights[i][j] = (2*(static_cast<double>(rand()) / RAND_MAX) - 1) / 8;
         }
     }
 
-    train(epochs, learningRate, labeled);
+    std::cout << "Weights initialized" << std::endl;
+
+    std::cout << "Perceptron Constructed";
+    if (multipleOutputs) 
+        std::cout << " with 10 output nodes." << std::endl;
+    else
+        std::cout << " with 1 output node." << std::endl;
+
+    // Train network
+    train(epochs, learningRate, labeled, multipleOutputs);
 }
 
 // NOTE assumes output is correct size
 void Perceptron::evaluate(const std::vector<double>& input, std::vector<double>& output)
 {
-    for (unsigned int i = 0; i < outputLayer.size(); i++) {
-        std::vector<double> weightedInputs(input.size(), 0);
-
+    for (unsigned int i = 0; i < output.size(); i++) {
+        double sum = 0;
         for (unsigned int j = 0; j < input.size(); j++) {
-            weightedInputs[j] = weights[j][i]*input[j];
+            sum += weights[j][i]*input[j];
         }
 
-        output[i] = outputLayer[i].evaluateNode(weightedInputs);
+        output[i] = sigmoid(sum);
     }
 }
 
-void Perceptron::train(int epochs, double learningRate, const std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled)
+void Perceptron::train(int epochs, double learningRate, std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled, bool multipleOutputs)
 {
     for (int i = 0; i < epochs; i++) {
         double totalError = 0;
         for (unsigned int j = 0; j < labeled.size(); j++) {
-            std::vector<double> output(labeled[j].second.size(), 0);
-            evaluate(labeled[j].first, output);
+            const std::vector<double>& exampleInput = labeled[j].first;
+            const std::vector<double>& exampleOutput = labeled[j].second;
+            std::vector<double> computedOutput(exampleOutput.size(), 0);
+            
+            evaluate(exampleInput, computedOutput);
 
-            double error = 0;
-            for (unsigned int k = 0; k < output.size(); k++) {
-                error += labeled[j].second[k] / 10 - output[k];
-            }
-            totalError += fabs(error);
-
-            if (error != 0) {
-                double gIn = sigmoidPrime(output);
-                for (unsigned int m = 0; m < labeled[j].first.size(); m++) {
-                    for (unsigned int n = 0; n < outputLayer.size(); n++) {
-                        weights[m][n] += learningRate * error * labeled[j].first[m] * gIn;
+            for (unsigned int k = 0; k < computedOutput.size(); k++) {
+                double error;
+                if (multipleOutputs) {
+                    error = exampleOutput[k] - computedOutput[k];
+                }
+                else {
+                    error = exampleOutput[k] / 10 - computedOutput[k];
+                }
+                double sum = computedOutput[k];
+                
+                totalError += fabs(error);
+                
+                if (error != 0) {
+                    double gIn = sigmoidPrime(sum);
+                    for (unsigned int m = 0; m < exampleInput.size(); m++) {
+                        weights[m][k] += learningRate * error * exampleInput[m] * gIn;
                     }
                 }
             }
@@ -69,10 +96,10 @@ void Perceptron::train(int epochs, double learningRate, const std::vector<std::p
     }
 }
 
-double Perceptron::sigmoidPrime(const std::vector<double>& x) {
-    double sum = 0;
-    for (unsigned int i = 0; i < x.size(); i++)
-        sum += x[i];
+double Perceptron::sigmoid(double sum) {
+    return 1/(1+ exp(-sum+0.5));
+}
 
+double Perceptron::sigmoidPrime(double sum) {
     return exp(sum) / pow(exp(sum) + 1, 2);
 }
