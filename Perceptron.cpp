@@ -5,6 +5,7 @@
 #include <ctime>
 #include <cmath>
 
+// TODO add bias node
 Perceptron::Perceptron(int epochs, double learningRate, const std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled)
     : outputLayer(labeled[0].second.size(), Node())
 {
@@ -17,17 +18,14 @@ Perceptron::Perceptron(int epochs, double learningRate, const std::vector<std::p
         weights[i] = new double[outputLayer.size()];
     }
 
-    std::cout << "inputNum: " << inputNum << std::endl;
-
     for (int i = 0; i < inputNum; i++) {
         for (unsigned int j = 0; j < outputLayer.size(); j++) {
-            weights[i][j] = 2*(static_cast<double>(rand()) / RAND_MAX) - 1;
-            std::cout << weights[i][j] << std::endl;
+            // NOTE between -0.25 and 0.25
+            weights[i][j] = (2*(static_cast<double>(rand()) / RAND_MAX) - 1);
         }
     }
 
     train(epochs, learningRate, labeled);
-
 }
 
 // NOTE assumes output is correct size
@@ -40,17 +38,13 @@ void Perceptron::evaluate(const std::vector<double>& input, std::vector<double>&
             weightedInputs[j] = weights[j][i]*input[j];
         }
 
-        //output[i] = outputLayer[i].evaluateNode(weightedInputs);
-        output[i] = floor(10 * outputLayer[i].evaluateNode(weightedInputs));
+        output[i] = outputLayer[i].evaluateNode(weightedInputs);
     }
 }
 
 void Perceptron::train(int epochs, double learningRate, const std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled)
 {
-        std::cout << learningRate << std::endl;
-
     for (int i = 0; i < epochs; i++) {
-        std::cout << "epoch, " << i << std::endl;
         double totalError = 0;
         for (unsigned int j = 0; j < labeled.size(); j++) {
             std::vector<double> output(labeled[j].second.size(), 0);
@@ -58,27 +52,27 @@ void Perceptron::train(int epochs, double learningRate, const std::vector<std::p
 
             double error = 0;
             for (unsigned int k = 0; k < output.size(); k++) {
-                error += labeled[j].second[k] - output[k];
+                error += labeled[j].second[k] / 10 - output[k];
             }
-            totalError += error;
+            totalError += fabs(error);
 
             if (error != 0) {
+                double gIn = sigmoidPrime(output);
                 for (unsigned int m = 0; m < labeled[j].first.size(); m++) {
                     for (unsigned int n = 0; n < outputLayer.size(); n++) {
-                        weights[m][n] += learningRate * error * sigmoidPrime(labeled[j].first[m]);
+                        weights[m][n] += learningRate * error * labeled[j].first[m] * gIn;
                     }
                 }
             }
         }
-        std::cout << totalError << std::endl;
+        std::cout << "epoch: " << i << ", error: " << totalError << std::endl;
     }
-    // for (unsigned int m = 0; m < labeled[0].first.size(); m++) {
-    //     for (unsigned int n = 0; n < outputLayer.size(); n++) {
-    //         std::cout << weights[m][n] << std::endl;
-    //     }
-    // }
 }
 
-double Perceptron::sigmoidPrime(double x) {
-    return exp(x) / pow(exp(x) + 1, 2);
+double Perceptron::sigmoidPrime(const std::vector<double>& x) {
+    double sum = 0;
+    for (unsigned int i = 0; i < x.size(); i++)
+        sum += x[i];
+
+    return exp(sum) / pow(exp(sum) + 1, 2);
 }

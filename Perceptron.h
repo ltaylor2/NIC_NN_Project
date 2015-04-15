@@ -12,9 +12,9 @@ public:
 
 private:
     void train(int epochs, double learningRate, const std::vector<std::pair<std::vector<double>, std::vector<double>>>& labeled);
-    double sigmoidPrime(double x);
+    double sigmoidPrime(const std::vector<double>& x);
     
-    std::vector<Node> inputLayer;
+    // TODO not necessary
     std::vector<Node> outputLayer;
     double** weights;
 };
