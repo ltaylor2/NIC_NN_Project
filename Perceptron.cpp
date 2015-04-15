@@ -32,7 +32,7 @@ Perceptron::Perceptron(int epochs, double learningRate, std::vector<std::pair<st
     for (int i = 0; i < inputSize; i++) {
         for (int j = 0; j < outputSize; j++) {
             // NOTE between -0.25 and 0.25
-            weights[i][j] = (2*(static_cast<double>(rand()) / RAND_MAX) - 1) / 8;
+            weights[i][j] = 2*(static_cast<double>(rand()) / RAND_MAX) - 1;
         }
     }
 
@@ -45,7 +45,8 @@ Perceptron::Perceptron(int epochs, double learningRate, std::vector<std::pair<st
         std::cout << " with 1 output node." << std::endl;
 
     // Train network
-    train(epochs, learningRate, labeled, multipleOutputs);
+    // NOTE called in main() for testing
+    // train(epochs, learningRate, labeled, multipleOutputs);
 }
 
 // NOTE assumes output is correct size
